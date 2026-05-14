@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="京都大阪旅遊">
+<title>🌸 京都・大阪旅行手冊</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#0a0a0f;font-family:'Noto Sans TC','PingFang TC','Helvetica Neue',sans-serif;color:#e8e8f0;overscroll-behavior:none;}
+button{font-family:inherit;}
+::-webkit-scrollbar{display:none;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel">
+const {useState} = React;
+
+const TAG_COLORS = {
+  餐飲:{bg:"#1e3a1e",text:"#4ade80",dot:"#4ade80"},
+  購物:{bg:"#1a2d3a",text:"#60a5fa",dot:"#60a5fa"},
+  觀光:{bg:"#3a2a10",text:"#fb923c",dot:"#fb923c"},
+  交通:{bg:"#2e1a2e",text:"#f472b6",dot:"#f472b6"},
+  住宿:{bg:"#1e2040",text:"#a78bfa",dot:"#a78bfa"},
+};
+
+const DAY_COLORS = ["#ff6b6b","#ffa94d","#69db7c","#4dabf7","#da77f2","#ffd43b"];
+const VIEWS = ["行程","住宿","備選","清單"];
+const VIEW_ICONS = ["📋","🏨","🔀","✅"];
+
+const MAP = {
+  kyotoHotel:"https://maps.app.goo.gl/F9GBqC8weUcmGoHMA",
+  osakaHotel:"https://maps.app.goo.gl/7uJk13Q82oK7KeV3A",
+  familymart1F:"https://maps.app.goo.gl/uLvwWSD76t5TXQo9A",
+  sevenStation:"https://maps.app.goo.gl/doTnG1syTseAuNna8",
+  lawson10min:"https://maps.app.goo.gl/9toLPsaAUp1ERrqC6",
+  kyotoSupermarket:"https://maps.app.goo.gl/MXJ7jp76xodtYuFa9",
+  seafoodTeishoku:"https://maps.app.goo.gl/q9Y3cxTkWqS842VW9",
+  charcoalYakitori:"https://maps.app.goo.gl/Qz31HHcDzw8BECsV8",
+  japaneseRest:"https://maps.app.goo.gl/isjmGxYgJbTZzwNv8",
+  seven711alley:"https://maps.app.goo.gl/DQyQeb1ujyMKwGis7",
+  seven711cross:"https://maps.app.goo.gl/Kyg6wDDWnieb26gz7",
+  familymartCross:"https://maps.app.goo.gl/JBqwLPPxEv2oj5Zd7",
+  lawsonNear:"https://maps.app.goo.gl/vPAojxvgXiWQcceVA",
+  lawsonExit9:"https://maps.app.goo.gl/QgPruybmPzxuRtFW9",
+  lifeSuper:"https://maps.app.goo.gl/tnRWNYek71ixWFHd8",
+  osakaTeishoku:"https://maps.app.goo.gl/ATFZajy3hUyf7mSJ7",
+  coffeeBreakfast:"https://maps.app.goo.gl/YJXe8SwCwx6ciGxv7",
+  coffeeSandwichRice:"https://maps.app.goo.gl/MJb9KU7L1TPqwf45A",
+  coffeeSandwich:"https://maps.app.goo.gl/nhyNUDGm8GtAoccq6",
+  bakery:"https://maps.app.goo.gl/WRB6UcSxsNFQWRqw5",
+  fushimiInari:"https://maps.app.goo.gl/hUXSCMHgNR49XpDM6",
+  inariCoffee:"https://maps.app.goo.gl/xAMXMekdETo6QnyH7",
+  gionShirakawa:"https://maps.app.goo.gl/99U1EqVaxMukbiH49",
+  kawaStarbucks:"https://maps.app.goo.gl/rKzM9eVRJVEd4h3UA",
+  mishimaYakiSuki:"https://maps.app.goo.gl/we9r6t63aEpeSFCP8",
+  tempuraTeishoku:"https://maps.app.goo.gl/HdrhpBBhcFUUnHzC8",
+  wagyu:"https://maps.app.goo.gl/8QYe2Q5Q1HftBiuk7",
+  yakinikuAsuka:"https://maps.app.goo.gl/iLdNhHPRkESea9yv6",
+  yasaka5tower:"https://maps.app.goo.gl/qdjsUsg6LYJMQnKK7",
+  kibune:"https://maps.app.goo.gl/3KXEEXroG3f1U2UJ7",
+  demachiyanagi:"https://maps.app.goo.gl/83mhwDKwTDZuAa516",
+  kinkakuji:"https://maps.app.goo.gl/pnUim1QXynPmULWC7",
+  osakaYaki:"https://maps.app.goo.gl/PXRGKmqjKmZfG7Wh6",
+  kyotoStation:"https://maps.app.goo.gl/vK4PwpUxw4bq4FTv6",
+  toyotei:"https://maps.app.goo.gl/JKpknmCTs5sgdYiU7",
+  sushiSpot:"https://maps.app.goo.gl/qdL988wsW2Yv1eqW8",
+  ledStairs:"https://maps.app.goo.gl/ucGpwtRVKS94risD9",
+  skyway:"https://maps.app.goo.gl/kDDVMv4Zr9mv2Zs87",
+  skyGarden:"https://maps.app.goo.gl/zzqBFyPGVhb7B7Tx6",
+  trokkoKameoka:"https://maps.app.goo.gl/Lu8oXzW98rWBX4Sg8",
+  bambooGrove:"https://maps.app.goo.gl/mWYxTH7sPirTEp5s5",
+  tenryuji:"https://maps.app.goo.gl/9abUoS4c6RgJ6jw57",
+  togetsukyo:"https://maps.app.goo.gl/WKZVhNKZWXCtzsCf6",
+  ninjaKissa:"https://maps.app.goo.gl/zzbVYgyfXZKT8chX9",
+  wagyu2:"https://maps.app.goo.gl/EhAhgfMvCY7cLpEd7",
+  arashiyamaOnsen:"https://maps.app.goo.gl/hpg96MbY3Y9xgAeY9",
+  toeiStudio:"https://maps.app.goo.gl/NAyqqbpwaLnrp33W6",
+  byodoin:"https://maps.app.goo.gl/sRZUx8vysvyHijAP6",
+  matchaStreet:"https://maps.app.goo.gl/72YYEkUoZsDvYhhn6",
+  nakamuraFujikichi:"https://maps.app.goo.gl/FH6TsvBhS3eV6cRG8",
+  nintendoMuseum:"https://maps.app.goo.gl/3mjstP7h9RqSxLvd9",
+  katsuoji:"https://maps.app.goo.gl/J9vWPtKV8YBq4A9u8",
+  umedaTomJerry:"https://maps.app.goo.gl/bCUfxXVx7z8md6q77",
+  umedaGhibli:"https://maps.app.goo.gl/o4xuYGSigznNoQ8X7",
+  umedaNintendo:"https://maps.app.goo.gl/4jzCyzbic9XumJnu7",
+  nanbaYasaka:"https://maps.app.goo.gl/STKYpbGP66kie19X8",
+  ebisubashi:"https://maps.app.goo.gl/QGZF3XeBfY4Yx33FA",
+  signStreet:"https://maps.app.goo.gl/qDusoGkzbMHC3bfA6",
+  ukiyokoji:"https://maps.app.goo.gl/hnhz7PAnhXkkDkJN7",
+  sukiyakiFB:"https://maps.app.goo.gl/Jork1gZ1UZhbqTyc9",
+  wagyu3:"https://maps.app.goo.gl/DQz8dWn1vGckds4w5",
+  sushiGenroku:"https://maps.app.goo.gl/LNA3p1YyDy7YQhDW9",
+  shinsaibashi:"https://maps.app.goo.gl/7pTA27YsGY8Y9f2w9",
+  aoyamon:"https://maps.app.goo.gl/EEdCnvn2f4DbKW4CA",
+  chuo_kokaido:"https://maps.app.goo.gl/mHEX4P3DNNvvXrGS7",
+  nambaBridge:"https://maps.app.goo.gl/KVoLA6TWuA5uCQ2X7",
+  outletMain:"https://maps.app.goo.gl/FLS59BvjKKRTgJNx5",
+  outletLuggage:"https://maps.app.goo.gl/LmjguSRLgJevzM3y7",
+  outletSea:"https://maps.app.goo.gl/CR8K4iorb469ZLob7",
+  outletElec:"https://maps.app.goo.gl/fitPa8eGDJj5DEJ46",
+};
+
+const openMap = (url) => { if(url) window.open(url,"_blank"); };
+
+const HOTELS = {
+  京都:{
+    name:"梅小路皇家公園酒店",nights:"Day 1–3（3晚）",
+    area:"梅小路京都西站・步行2分鐘",checkin:"15:00",checkout:"11:00",
+    emoji:"🏯",mapUrl:MAP.kyotoHotel,
+    features:["飯店1F有全家便利商店","步行3分鐘到京都水族館","JR嵯峨野線直達嵐山只要11分鐘","京都車站只要1站3分鐘"],
+    nearby:[
+      {name:"🏪 全家(1F)",url:MAP.familymart1F},
+      {name:"🏪 7-11(車站)",url:MAP.sevenStation},
+      {name:"🏪 LAWSON(10分鐘)",url:MAP.lawson10min},
+      {name:"🛒 京都車站超市",url:MAP.kyotoSupermarket},
+      {name:"🍽️ 海鮮市場旁定食",url:MAP.seafoodTeishoku},
+      {name:"🍢 炭火串燒",url:MAP.charcoalYakitori},
+      {name:"🍱 傳統日式餐廳",url:MAP.japaneseRest},
+    ],
+  },
+  大阪:{
+    name:"大阪四季靱公園酒店",nights:"Day 4–5（2晚）",
+    area:"靱公園旁・頂級市中心位置",checkin:"15:00",checkout:"11:00",
+    emoji:"🌆",mapUrl:MAP.osakaHotel,
+    features:["計程車10分鐘到梅田","步行可達心齋橋購物街","頂級四季服務，最佳休息恢復","附近多間餐廳與咖啡廳"],
+    nearby:[
+      {name:"🏪 7-11(巷子)",url:MAP.seven711alley},
+      {name:"🏪 7-11(過馬路)",url:MAP.seven711cross},
+      {name:"🏪 全家(過馬路)",url:MAP.familymartCross},
+      {name:"🏪 LAWSON(近)",url:MAP.lawsonNear},
+      {name:"🏪 LAWSON(車站出口9)",url:MAP.lawsonExit9},
+      {name:"🛒 LIFE超市",url:MAP.lifeSuper},
+      {name:"🍽️ 定食店",url:MAP.osakaTeishoku},
+      {name:"☕ 咖啡+麵包",url:MAP.coffeeBreakfast},
+      {name:"☕ 咖啡+三明治+飯",url:MAP.coffeeSandwichRice},
+      {name:"☕ 咖啡+三明治",url:MAP.coffeeSandwich},
+      {name:"🥐 麵包店",url:MAP.bakery},
+    ],
+  },
+};
+
+const CHECKLIST = [
+  {id:"sim",day:"出發前",text:"4G SIM卡已備妥"},
+  {id:"vjw",day:"出發前",text:"5/31 每人登錄 VJW（看教學）"},
+  {id:"tlog",day:"出發前",text:"下載 Tabelog App（日本餐廳資料庫）"},
+  {id:"haruka",day:"出發前",text:"HARUKA 車票最晚 6/1 設定"},
+  {id:"iccard",day:"出發前",text:"實體 IC 卡（Suica/ICOCA）已儲值"},
+  {id:"gear",day:"出發前",text:"摺疊傘・防曬・全家人最好走的運動鞋"},
+  {id:"kinkaku",day:"Day 2",text:"金閣寺門票現場買（6/2）"},
+  {id:"train",day:"Day 2前",text:"嵐山小火車票最晚 6/2 預約「龜岡往嵯峨」"},
+  {id:"mii",day:"Day 3",text:"6/3 14:00 前設好任天堂 Mii 頭像"},
+  {id:"katsuo",day:"Day 3前",text:"勝尾寺門票 6/3 前買好"},
+  {id:"car",day:"Day 4",text:"包車司機確認集合時間與地點（5/28前確認）"},
+  {id:"ntendo",day:"Day 4",text:"任天堂博物館 12:30 準時入場，手機出示票券"},
+];
+
+const KYOTO_BACKUPS = [
+  {emoji:"👘",name:"京都傳統產業博物館 MOCAD",sub:"74種工藝・職人現場示範",tags:["觀光"],cost:"免費",tip:"平安神宮旁，全室內冷氣，雨天首選"},
+  {emoji:"🍶",name:"月桂冠大倉紀念館",sub:"380年清酒・3杯試飲+贈小瓶",tags:["觀光","餐飲"],cost:"¥600",tip:"中書島站步行5分，旁邊有十石舟河岸步道"},
+  {emoji:"🐟",name:"京都水族館",sub:"就在飯店對面・步行3分鐘",tags:["觀光"],cost:"¥2,200",tip:"飯店門口！大山椒魚+水母奇觀，下雨必去"},
+  {emoji:"⛩️",name:"三十三間堂",sub:"1001尊觀音・日本最長木造建築",tags:["觀光"],cost:"¥600",tip:"京都車站搭巴士5分鐘，下雨穿廊超美"},
+];
+
+const DAYS = [
+  {
+    day:1,date:"6/1 一",emoji:"✈️",label:"抵達京都",hotelCity:"京都",city:"京都",
+    spots:[
+      {time:"13:30",emoji:"🏨",name:"抵達・放行李",sub:"梅小路皇家公園酒店 Check-in",
+       desc:"搭 HARUKA 直達京都車站，轉 JR 嵯峨野線 1 站到「梅小路京都西」，步行 2 分鐘到飯店。",
+       tags:["交通","住宿"],cost:null,mapUrl:MAP.kyotoHotel,
+       tips:["飯店1F有全家可以補給","先放行李再輕裝出發"]},
+      {time:"16:15",emoji:"⛩️",name:"伏見稻荷大社",sub:"千本鳥居・傍晚人少光線最美",
+       desc:"走到奧社奉拜所就折返，約 45–60 分鐘。傍晚陽光灑在紅鳥居上光影絕美！24小時開放。",
+       tags:["觀光"],cost:"免費",rating:4.6,mapUrl:MAP.fushimiInari,
+       nearbyLinks:[{label:"☕ 稻彥咖啡&雙色冰淇淋",url:MAP.inariCoffee}],
+       tips:["狐狸咬稻穗=豐收、鑰匙=財富、珠寶=靈力","稻彥咖啡雙色冰淇淋必吃","即時影像可查人多不多"]},
+      {time:"18:30",emoji:"🌊",name:"祇園・鴨川・先斗町",sub:"京都最有氣氛的傍晚",
+       desc:"搭京阪電車 4 站到祇園四條。看納涼床川床、逛花見小路、享用晚餐。",
+       tags:["餐飲","觀光"],cost:null,mapUrl:MAP.gionShirakawa,
+       nearbyLinks:[
+         {label:"☕ 川床星巴克",url:MAP.kawaStarbucks},
+         {label:"🥩 三嶋亭壽喜燒",url:MAP.mishimaYakiSuki},
+         {label:"🍤 天婦羅定食",url:MAP.tempuraTeishoku},
+         {label:"🥩 和牛壽喜燒",url:MAP.wagyu},
+         {label:"🍢 燒肉飛鳥",url:MAP.yakinikuAsuka},
+       ],
+       tips:["三嶋亭壽喜燒（強推）","川床星巴克打卡","鴨川等間隔法則超可愛"]},
+    ],
+    alternates:[
+      {emoji:"👘",name:"☂️ 備選A：清水寺週邊散策",sub:"二年坂・三年坂・八坂之塔",
+       desc:"不必爬上寺廟！走二年坂、三年坂石板路與法觀寺八坂之塔（46公尺）。世界唯一塌塌米星巴克！",
+       tags:["觀光"],cost:"免費散步",mapUrl:MAP.yasaka5tower,
+       tips:["塌塌米星巴克要脫鞋","緩坡好走，累了隨時坐咖啡廳","下雨備選首選"]},
+    ],
+  },
+  {
+    day:2,date:"6/2 二",emoji:"💧",label:"貴船・金閣・夜景",hotelCity:"京都",city:"京都",
+    spots:[
+      {time:"09:30",emoji:"💧",name:"貴船神社",sub:"森林水占卜・繪馬發源地",
+       desc:"搭叡山電車到貴船口，步行上山。水占卜籤詩掃 QR 自動翻中文！繪馬習俗就從這裡起源。",
+       tags:["觀光"],cost:"免費",rating:4.5,mapUrl:MAP.kibune,
+       tips:["比市區涼爽許多","水占卜：空白籤漂在水上文字才浮現","體力指數🚶🚶🚶"]},
+      {time:"12:30",emoji:"🐢",name:"出町柳・跳烏龜",sub:"鴨川三角洲・K-ON聖地",
+       desc:"賀茂川＋高野川交會處，踩烏龜形踏腳石過河！旁邊糺之森超好走，在此吃午餐。",
+       tags:["觀光"],cost:"免費",rating:4.6,mapUrl:MAP.demachiyanagi,
+       tips:["注意老鷹會搶食！","除了烏龜還有千鳥造型石頭","旁邊找間店吃午餐再出發"]},
+      {time:"15:30",emoji:"✨",name:"金閣寺",sub:"下午陽光最金碧輝煌",
+       desc:"三層樓暗藏將軍野心：一樓貴族、二樓武士、三樓禪宗，二三樓貼純金箔共20公斤！",
+       tags:["觀光"],cost:"¥500現場買",rating:4.6,mapUrl:MAP.kinkakuji,
+       nearbyLinks:[{label:"🥘 大阪燒（附近）",url:MAP.osakaYaki}],
+       tips:["記得看屋頂金鳳凰","繞一圈約40分鐘全程碎石平路","園內有抹茶茶點休息區"]},
+      {time:"18:00",emoji:"🚉",name:"京都車站夜景三部曲",sub:"伊勢丹・LED光影秀・Sky Garden",
+       desc:"18:00 晚餐 → 19:30 大階梯LED燈光秀 → 20:00 空中徑路平視京都塔 → 20:30 Sky Garden 360° 夜景",
+       tags:["餐飲","觀光"],cost:"免費入場",rating:4.0,mapUrl:MAP.kyotoStation,
+       nearbyLinks:[
+         {label:"🍔 東洋亭漢堡排",url:MAP.toyotei},
+         {label:"🍣 必吃回轉壽司",url:MAP.sushiSpot},
+         {label:"💡 大階梯LED秀",url:MAP.ledStairs},
+         {label:"🌉 空中徑路Skyway",url:MAP.skyway},
+         {label:"🌃 Sky Garden",url:MAP.skyGarden},
+       ],
+       tips:["東洋亭漢堡排+冰鎮番茄沙拉超經典","搭JR只要1站3分鐘回飯店","善用大空手扶梯不用爬樓梯"]},
+    ],
+    alternates:[],
+  },
+  {
+    day:3,date:"6/3 三",emoji:"🎋",label:"嵐山深度一日",hotelCity:"京都",city:"京都",
+    spots:[
+      {time:"08:00",emoji:"🚂",name:"嵯峨野觀光小火車",sub:"龜岡→嵯峨・溪谷20分鐘",
+       desc:"從飯店搭JR到龜岡（25分鐘），換小火車沿保津川溪谷行駛，幸運能跟泛舟遊客揮手！",
+       tags:["交通","觀光"],cost:"¥880",rating:4.5,mapUrl:MAP.trokkoKameoka,
+       tips:["最晚6/2前預約「龜岡往嵯峨」","坐靠溪谷那側視野最好","6月初翠綠楓葉+溪水超美"]},
+      {time:"09:30",emoji:"🎋",name:"嵐山竹林小徑",sub:"早到人少・日本音風景百選",
+       desc:"從小火車站走出就是竹林高處，一路平緩下坡。風吹竹葉聲被列為日本音風景百選。",
+       tags:["觀光"],cost:"免費",rating:4.3,mapUrl:MAP.bambooGrove,
+       tips:["早上空氣最清新人最少","往下走就是天龍寺","體力指數🚶🚶"]},
+      {time:"10:30",emoji:"🏯",name:"天龍寺",sub:"世界遺產・借景庭園",
+       desc:"從竹林北門進、正門出。曹源池庭園「借景」讓嵐山成為花園一部分，日本最早的指定史蹟。",
+       tags:["觀光"],cost:"¥500",rating:4.4,mapUrl:MAP.tenryuji,
+       tips:["庭園步道寬敞，隨處有石椅","出正門就是熱鬧大街","體力指數🚶"]},
+      {time:"12:00",emoji:"🌉",name:"渡月橋・嵐山大街・友禪光林",sub:"午餐・足湯・600根彩色柱子",
+       desc:"河邊拍合照，找間店吃午餐。嵐電站內「友禪光林」600根彩色柱超美，月台還有足湯！",
+       tags:["餐飲","觀光"],cost:"足湯¥200",rating:4.5,mapUrl:MAP.togetsukyo,
+       nearbyLinks:[
+         {label:"☕ 忍者咖啡廳",url:MAP.ninjaKissa},
+         {label:"🥩 平價和牛牛排",url:MAP.wagyu2},
+         {label:"♨️ 嵐山溫泉足湯",url:MAP.arashiyamaOnsen},
+       ],
+       tips:["% Arabica 咖啡超好喝","友禪光林免門票直接進","回程JR只要11分鐘到飯店"]},
+    ],
+    alternates:[
+      {emoji:"👘",name:"☂️ 備選A：清水寺週邊散策",sub:"二年坂・三年坂・八坂之塔",
+       desc:"不必爬上寺廟！走二年坂、三年坂石板路與法觀寺八坂之塔（46公尺）。世界唯一塌塌米星巴克！",
+       tags:["觀光"],cost:"免費散步",mapUrl:MAP.yasaka5tower,
+       tips:["緩坡好走，累了隨時坐咖啡廳","塌塌米星巴克要脫鞋"]},
+      {emoji:"🎬",name:"🎬 備選B：東映太秦電影村",sub:"武士體驗・真刀決鬥秀",
+       desc:"真正的電影製片廠！完整重現江戶時代街道，劍劇秀有吊鋼絲特效。可付費穿武士服拍照。",
+       tags:["觀光"],cost:"¥2,400",mapUrl:MAP.toeiStudio,
+       tips:["從飯店搭JR到太秦站超近","全程室內可吹冷氣","大部分是平地體力消耗小"]},
+    ],
+  },
+  {
+    day:4,date:"6/4 四",emoji:"🍵",label:"宇治→任天堂→大阪",hotelCity:"大阪",city:"宇治→大阪",
+    spots:[
+      {time:"10:40",emoji:"🍵",name:"宇治平等院・抹茶街",sub:"10圓硬幣上的國寶・800年茶文化",
+       desc:"拿出10圓硬幣，上面的建築就在眼前！表參道被評為「最香風景街道百選」，整條街飄抹茶香。",
+       tags:["觀光","餐飲"],cost:"¥700",rating:4.5,mapUrl:MAP.byodoin,
+       nearbyLinks:[
+         {label:"🍵 抹茶街",url:MAP.matchaStreet},
+         {label:"🍰 中村藤吉",url:MAP.nakamuraFujikichi},
+       ],
+       tips:["中村藤吉抹茶蕎麥麵+霜淇淋必吃","全路平坦好走","包車司機在宇治站集合"]},
+      {time:"12:30",emoji:"🎮",name:"任天堂博物館",sub:"12:30準時入場・10枚代幣省著用",
+       desc:"1889年從花札紙牌起家！巨大控制器2人合力玩、腳下螢幕玩花札。全室內冷氣超舒服。",
+       tags:["觀光"],cost:"¥3,300",rating:4.5,mapUrl:MAP.nintendoMuseum,
+       tips:["6/3 14:00前設好Mii頭像","10枚代幣要省著玩","Shop有限定大手把抱枕","Hatena Burger自選配料漢堡"]},
+      {time:"14:30",emoji:"👺",name:"勝尾寺",sub:"滿山達摩・連天皇都認輸的勝利之寺",
+       desc:"到處都是紅色達摩！買達摩先畫左眼許願，願望成真再畫右眼還願。連豐臣秀吉都來這求勝！",
+       tags:["觀光"],cost:"¥400（6/3前買）",rating:4.6,mapUrl:MAP.katsuoji,
+       tips:["石頭上樹枝上都有達摩超好拍","體力指數🚶🚶","包車行程不用煩惱交通"]},
+      {time:"18:00",emoji:"🏨",name:"大阪四季酒店 Check-in・梅田採購",sub:"靱公園・頂級住宿",
+       desc:"從勝尾寺包車直達飯店 Check-in。整頓後前往梅田！百貨8:00關但餐廳區到10-11點。",
+       tags:["住宿","購物","餐飲"],cost:null,mapUrl:MAP.osakaHotel,
+       nearbyLinks:[
+         {label:"🐱 湯姆與傑利",url:MAP.umedaTomJerry},
+         {label:"🎬 梅田吉卜力",url:MAP.umedaGhibli},
+         {label:"🎮 任天堂購物區",url:MAP.umedaNintendo},
+       ],
+       tips:["阪急地下食品街=百貨界天花板","吉卜力/任天堂/湯姆傑利都在梅田","百貨8:00關但餐廳到10-11點"]},
+    ],
+    alternates:[],
+  },
+  {
+    day:5,date:"6/5 五",emoji:"🦁",label:"難波獅子・道頓堀",hotelCity:"大阪",city:"大阪",
+    spots:[
+      {time:"10:00",emoji:"🦁",name:"難波八坂神社",sub:"12公尺巨大獅子頭・吞掉厄運",
+       desc:"高12公尺寬11公尺的獅子頭！象徵把四方厄運一口吞下招來財運。晚上眼睛會發光，鼻子有喇叭！",
+       tags:["觀光"],cost:"免費",rating:4.5,mapUrl:MAP.nanbaYasaka,
+       tips:["定點拍照很輕鬆","鼻子裡有喇叭節慶播音樂","體力指數🚶"]},
+      {time:"11:00",emoji:"🐙",name:"道頓堀・固力果跑跑人",sub:"必拍！螃蟹道樂腳真的會動",
+       desc:"大阪食倒精神聖地。下層蜻蜓步道沿河散步比樓上舒服。浮世小路穿越大正時代街景。",
+       tags:["餐飲","觀光"],cost:null,rating:4.5,mapUrl:MAP.ebisubashi,
+       nearbyLinks:[
+         {label:"📍 特色招牌街",url:MAP.signStreet},
+         {label:"🛤️ 浮世小路",url:MAP.ukiyokoji},
+         {label:"🥩 FB壽喜燒",url:MAP.sukiyakiFB},
+         {label:"🥩 FB黑毛和牛",url:MAP.wagyu3},
+         {label:"🍣 元祿回轉壽司",url:MAP.sushiGenroku},
+       ],
+       tips:["下層河道步道避開人群","章魚燒/串炸/壽喜燒隨便吃都好","水上觀光船20分鐘看完所有招牌"]},
+      {time:"14:00",emoji:"🛍️",name:"心齋橋筋",sub:"380年歷史全天候拱頂商街",
+       desc:"6月梅雨躲雨首選！大丸百貨 Art Deco 建築超美。藥妝/Uniqlo/大創一次買齊。",
+       tags:["購物"],cost:null,rating:4.3,mapUrl:MAP.shinsaibashi,
+       tips:["每逛30分鐘找間店坐下來喝茶","全程行人徒步區地板平坦","大丸百貨建築本身值得看"]},
+      {time:"20:00",emoji:"🌹",name:"晚上二選一",sub:"大阪城青屋門 OR 中之島玫瑰公園",
+       desc:"【A】青屋門：江戶城池打燈，靜謐無人潮，護城河倒影超美\n【B】中之島：6月初玫瑰尾聲！310種3700株，大正紅磚建築背景",
+       tags:["觀光"],cost:"免費",
+       nearbyLinks:[
+         {label:"🦉 青屋門",url:MAP.aoyamon},
+         {label:"🌹 中央公會堂",url:MAP.chuo_kokaido},
+         {label:"🦁 難波橋（石獅）",url:MAP.nambaBridge},
+       ],
+       tips:["A：JR大阪城公園站走10分鐘到青屋門","B：北浜站出發，難波橋上有石獅子","看體力二選一"]},
+    ],
+    alternates:[],
+  },
+  {
+    day:6,date:"6/6 六",emoji:"✈️",label:"臨空Outlet・返台",hotelCity:null,city:"大阪→台灣",
+    spots:[
+      {time:"退房後",emoji:"🛍️",name:"臨空城 Premium Outlets",sub:"距KIX只要1站・面向大阪灣",
+       desc:"難波搭南海電鐵直達。Sea Side Area 直接面向大海，看飛機起降！旁邊有臨空之湯泡完再上飛機。",
+       tags:["購物"],cost:null,rating:4.1,mapUrl:MAP.outletMain,
+       nearbyLinks:[
+         {label:"🧳 行李寄放",url:MAP.outletLuggage},
+         {label:"🌊 Sea Side區",url:MAP.outletSea},
+         {label:"📱 電器行",url:MAP.outletElec},
+       ],
+       tips:["行李放投幣寄物（大箱都放得下）","Sea Side有草地懶人沙發","逛完泡臨空之湯再上飛機睡超好"]},
+      {time:"16:00",emoji:"✈️",name:"前往關西機場",sub:"從Outlet只要1站・19:05航班",
+       desc:"臨空城到 KIX 只要一站！提早辦理報到，搭乘 19:05 航班返台，帶滿回憶回家！",
+       tags:["交通"],cost:null,
+       tips:["提前2小時以上到機場","最後一次買免稅商品","一路順風！🎌"]},
+    ],
+    alternates:[],
+  },
+];
+
+function Tag({tag}) {
+  const c = TAG_COLORS[tag] || {bg:"#333",text:"#fff",dot:"#fff"};
+  return (
+    <span style={{fontSize:10,background:c.bg,color:c.text,padding:"2px 8px",borderRadius:10,display:"inline-flex",alignItems:"center",gap:4}}>
+      <span style={{width:5,height:5,borderRadius:"50%",background:c.dot,display:"inline-block"}}/>
+      {tag}
+    </span>
+  );
+}
+
+function SpotCard({spot,isAlt,expanded,onToggle,accent}) {
+  return (
+    <div onClick={onToggle} style={{background:expanded?"#1a1a2e":"#13131f",border:`1px solid ${expanded?accent+"70":"#ffffff12"}`,borderRadius:14,padding:"12px 14px",cursor:"pointer",transition:"all 0.2s",borderLeft:isAlt?"3px solid #ffffff18":undefined,marginBottom:0}}>
+      <div style={{display:"flex",alignItems:"flex-start",gap:10}}>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,minWidth:42}}>
+          <div style={{fontSize:20,width:38,height:38,background:`${accent}20`,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center"}}>{spot.emoji}</div>
+          {spot.time&&<div style={{fontSize:9,color:"#555",textAlign:"center"}}>{spot.time}</div>}
+        </div>
+        <div style={{flex:1}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+            <span style={{fontSize:13,fontWeight:700,color:"#f0f0ff"}}>{spot.name}</span>
+            {spot.rating&&<span style={{fontSize:10,color:"#fbbf24",background:"#2a2000",padding:"1px 6px",borderRadius:10}}>⭐{spot.rating}</span>}
+          </div>
+          <div style={{fontSize:11,color:"#8888aa",marginTop:2}}>{spot.sub}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:6}}>
+            {spot.tags.map(t=><Tag key={t} tag={t}/>)}
+            {spot.cost&&<span style={{fontSize:10,background:"#2a2a00",color:"#ffd43b",padding:"2px 8px",borderRadius:10}}>💴 {spot.cost}</span>}
+            {spot.mapUrl&&(
+              <button onClick={e=>{e.stopPropagation();openMap(spot.mapUrl);}}
+                style={{fontSize:10,background:"#1a2a1a",border:"1px solid #22c55e40",color:"#4ade80",padding:"2px 8px",borderRadius:10,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:3}}>
+                🗺️ 導航
+              </button>
+            )}
+          </div>
+        </div>
+        <div style={{color:"#444",fontSize:11,transform:expanded?"rotate(180deg)":"none",transition:"transform 0.2s",paddingTop:2,flexShrink:0}}>▼</div>
+      </div>
+      {expanded&&(
+        <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${accent}30`}}>
+          <div style={{fontSize:12,color:"#b0b0cc",lineHeight:1.75,marginBottom:10,background:"#ffffff05",padding:10,borderRadius:8}}>
+            {spot.desc.split('\n').map((l,i)=><div key={i}>{l}</div>)}
+          </div>
+          {spot.nearbyLinks&&spot.nearbyLinks.length>0&&(
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:10,color:accent,fontWeight:700,marginBottom:6}}>📍 地圖快速連結</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {spot.nearbyLinks.map((lnk,li)=>(
+                  <button key={li} onClick={e=>{e.stopPropagation();openMap(lnk.url);}}
+                    style={{background:"#1a2a3a",border:"1px solid #4dabf740",color:"#60a5fa",borderRadius:20,padding:"3px 8px",fontSize:9,cursor:"pointer",display:"inline-flex",alignItems:"center",gap:3}}>
+                    📍 {lnk.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {spot.tips&&spot.tips.length>0&&(
+            <div>
+              <div style={{fontSize:10,color:accent,fontWeight:700,marginBottom:6}}>🚀 推薦 / 注意</div>
+              {spot.tips.map((tip,ti)=>(
+                <div key={ti} style={{fontSize:11,color:"#9999bb",padding:"3px 0 3px 12px",borderLeft:`2px solid ${accent}40`,marginBottom:3,lineHeight:1.5}}>· {tip}</div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [activeDay,setActiveDay] = useState(0);
+  const [view,setView] = useState("行程");
+  const [expandedSpot,setExpandedSpot] = useState(null);
+  const [expandedAlt,setExpandedAlt] = useState(null);
+  const [expandHotel,setExpandHotel] = useState(false);
+  const [checked,setChecked] = useState({});
+
+  const day = DAYS[activeDay];
+  const hotel = day.hotelCity ? HOTELS[day.hotelCity] : null;
+  const accent = DAY_COLORS[activeDay];
+  const doneCount = CHECKLIST.filter(i=>checked[i.id]).length;
+  const groups = [...new Set(CHECKLIST.map(i=>i.day))];
+
+  const sw = (i) => { setActiveDay(i); setExpandedSpot(null); setExpandedAlt(null); setExpandHotel(false); };
+  const sv = (v) => { setView(v); setExpandedSpot(null); setExpandedAlt(null); };
+
+  return (
+    <div style={{background:"#0a0a0f",minHeight:"100vh",display:"flex",flexDirection:"column",maxWidth:480,margin:"0 auto",position:"relative"}}>
+
+      {/* HEADER */}
+      <div style={{background:"linear-gradient(135deg,#1a1a2e,#16213e)",padding:"16px 16px 0",borderBottom:"1px solid #ffffff10",position:"sticky",top:0,zIndex:100}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+          <span style={{fontSize:22}}>🌸</span>
+          <div>
+            <div style={{fontSize:17,fontWeight:700}}>京都・大阪旅行手冊</div>
+            <div style={{fontSize:11,color:"#8888aa",marginTop:1}}>6天5晚 · 2026年6月</div>
+          </div>
+          <div style={{marginLeft:"auto",display:"flex",gap:5}}>
+            <span style={{fontSize:10,background:"#ffffff12",padding:"3px 8px",borderRadius:20,color:"#aaa"}}>🔒 私密</span>
+            <span style={{fontSize:10,background:"#ffffff12",padding:"3px 8px",borderRadius:20,color:"#aaa"}}>👥 4名</span>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:10,scrollbarWidth:"none"}}>
+          {DAYS.map((d,i)=>(
+            <button key={i} onClick={()=>sw(i)}
+              style={{flexShrink:0,background:activeDay===i?DAY_COLORS[i]:"#ffffff10",color:activeDay===i?"#000":"#888",border:"none",borderRadius:20,padding:"5px 12px",fontSize:11,fontWeight:activeDay===i?700:400,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+              <span>{d.emoji}</span><span>第{d.day}天</span><span style={{fontSize:9}}>{d.date}</span>
+            </button>
+          ))}
+        </div>
+        <div style={{display:"flex",background:"#ffffff08",borderRadius:10,padding:3,marginBottom:12}}>
+          {VIEWS.map((v,vi)=>(
+            <button key={v} onClick={()=>sv(v)}
+              style={{flex:1,background:view===v?accent:"transparent",color:view===v?"#000":"#777",border:"none",borderRadius:8,padding:"6px 2px",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+              {VIEW_ICONS[vi]} {v}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* DAY LABEL */}
+      <div style={{background:`linear-gradient(90deg,${accent}22,transparent)`,borderLeft:`3px solid ${accent}`,margin:"12px 16px 6px",padding:"8px 12px",borderRadius:"0 8px 8px 0"}}>
+        <div style={{fontSize:13,fontWeight:700,color:accent}}>{day.emoji} Day {day.day}｜{day.label}</div>
+        <div style={{fontSize:11,color:"#888",marginTop:2}}>📍 {day.city}{hotel?` · 🏨 ${hotel.name}`:""}</div>
+      </div>
+
+      {/* CONTENT */}
+      <div style={{flex:1,padding:"4px 16px 90px"}}>
+
+        {/* 行程 */}
+        {view==="行程"&&day.spots.map((spot,i)=>(
+          <div key={i}>
+            {i>0&&<div style={{width:2,height:8,background:`${accent}35`,margin:"0 0 0 23px"}}/>}
+            <SpotCard spot={spot} expanded={expandedSpot===i} onToggle={()=>setExpandedSpot(expandedSpot===i?null:i)} accent={accent}/>
+          </div>
+        ))}
+
+        {/* 住宿 */}
+        {view==="住宿"&&(hotel?(
+          <div>
+            <div onClick={()=>setExpandHotel(!expandHotel)}
+              style={{background:expandHotel?"#1a1a2e":"#13131f",border:`1px solid ${expandHotel?accent+"70":"#ffffff12"}`,borderRadius:16,padding:16,cursor:"pointer",marginBottom:12}}>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{fontSize:26,width:50,height:50,background:`${accent}20`,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center"}}>{hotel.emoji}</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:15,fontWeight:700,color:"#f0f0ff"}}>{hotel.name}</div>
+                  <div style={{fontSize:11,color:"#8888aa",marginTop:2}}>📍 {hotel.area}</div>
+                  <div style={{fontSize:11,color:"#888",marginTop:2}}>🗓️ {hotel.nights}</div>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:8}}>
+                    <Tag tag="住宿"/>
+                    <span style={{fontSize:10,background:"#1e2a1e",color:"#86efac",padding:"2px 8px",borderRadius:10}}>✔ Check-in {hotel.checkin}</span>
+                    <span style={{fontSize:10,background:"#2a1e1e",color:"#fca5a5",padding:"2px 8px",borderRadius:10}}>✖ Check-out {hotel.checkout}</span>
+                    <button onClick={e=>{e.stopPropagation();openMap(hotel.mapUrl);}}
+                      style={{fontSize:10,background:"#1a2a1a",border:"1px solid #22c55e40",color:"#4ade80",padding:"2px 8px",borderRadius:10,cursor:"pointer"}}>🗺️ 導航到飯店</button>
+                  </div>
+                </div>
+                <div style={{color:"#444",fontSize:11,transform:expandHotel?"rotate(180deg)":"none",transition:"transform 0.2s"}}>▼</div>
+              </div>
+              {expandHotel&&(
+                <div style={{marginTop:14,paddingTop:14,borderTop:`1px solid ${accent}30`}}>
+                  <div style={{fontSize:10,color:accent,fontWeight:700,marginBottom:8}}>✨ 飯店優勢</div>
+                  {hotel.features.map((f,fi)=>(
+                    <div key={fi} style={{fontSize:12,color:"#b0b0cc",padding:"4px 0 4px 12px",borderLeft:`2px solid ${accent}40`,marginBottom:4,lineHeight:1.5}}>· {f}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{background:"#13131f",border:"1px solid #ffffff12",borderRadius:14,padding:14,marginBottom:12}}>
+              <div style={{fontSize:12,fontWeight:700,color:"#f0f0ff",marginBottom:10}}>🗺️ 酒店週邊（點擊導航）</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                {hotel.nearby.map((item,ni)=>{
+                  const isCvn = item.name.includes("全家")||item.name.includes("7-11")||item.name.includes("LAWSON")||item.name.includes("LIFE")||item.name.includes("🏪")||item.name.includes("🛒");
+                  const isFood = item.name.includes("定食")||item.name.includes("串燒")||item.name.includes("餐廳")||item.name.includes("咖啡")||item.name.includes("麵包")||item.name.includes("🍽️")||item.name.includes("☕")||item.name.includes("🥐");
+                  return (
+                    <button key={ni} onClick={()=>openMap(item.url)}
+                      style={{fontSize:11,background:isCvn?"#1a2d1a":isFood?"#3a2a10":"#1a1a2e",color:isCvn?"#86efac":isFood?"#fb923c":"#a78bfa",padding:"5px 10px",borderRadius:20,border:"none",cursor:"pointer"}}>
+                      {item.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {activeDay===3&&(
+              <div style={{background:"#2a1a00",border:"1px solid #fb923c40",borderRadius:12,padding:"10px 14px"}}>
+                <div style={{fontSize:11,color:"#fb923c",fontWeight:700,marginBottom:4}}>📦 今日搬家提醒</div>
+                <div style={{fontSize:12,color:"#cc9966",lineHeight:1.6}}>今天從京都梅小路酒店 → 大阪四季靱公園酒店。包車行程結束後直接抵達新飯店，無需自行搬運。</div>
+              </div>
+            )}
+          </div>
+        ):(
+          <div style={{background:"#13131f",border:"1px solid #ffffff12",borderRadius:14,padding:20,textAlign:"center"}}>
+            <div style={{fontSize:32,marginBottom:8}}>✈️</div>
+            <div style={{fontSize:13,color:"#8888aa"}}>Day 6 回程日，無住宿安排</div>
+            <div style={{fontSize:11,color:"#555",marginTop:6}}>19:05 航班返台，一路順風！</div>
+          </div>
+        ))}
+
+        {/* 備選 */}
+        {view==="備選"&&(
+          <div>
+            {day.alternates.length>0?(
+              <div>
+                <div style={{fontSize:11,color:"#8888aa",marginBottom:12,lineHeight:1.6,background:"#ffffff06",padding:"10px 12px",borderRadius:10}}>
+                  ☂️ 天氣不佳或體力不足時的替換方案
+                </div>
+                {day.alternates.map((alt,i)=>(
+                  <div key={i} style={{marginBottom:10}}>
+                    <SpotCard spot={alt} isAlt expanded={expandedAlt===i} onToggle={()=>setExpandedAlt(expandedAlt===i?null:i)} accent={accent}/>
+                  </div>
+                ))}
+              </div>
+            ):(
+              <div style={{background:"#13131f",border:"1px solid #ffffff12",borderRadius:14,padding:"16px",marginBottom:12,textAlign:"center"}}>
+                <div style={{fontSize:28,marginBottom:6}}>🎯</div>
+                <div style={{fontSize:13,color:"#8888aa"}}>此日行程已固定，無備選方案</div>
+              </div>
+            )}
+            {activeDay<=2&&(
+              <div style={{marginTop:6}}>
+                <div style={{fontSize:11,color:"#777",fontWeight:700,marginBottom:8}}>📌 京都任一天通用備選</div>
+                {KYOTO_BACKUPS.map((item,ii)=>(
+                  <div key={ii} style={{background:"#13131f",border:"1px solid #ffffff10",borderRadius:12,padding:"10px 12px",marginBottom:8,display:"flex",gap:10,alignItems:"flex-start"}}>
+                    <span style={{fontSize:20}}>{item.emoji}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:600,color:"#e0e0f0"}}>{item.name}</div>
+                      <div style={{fontSize:11,color:"#777",marginTop:1}}>{item.sub}</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:6}}>
+                        {item.tags.map(t=><Tag key={t} tag={t}/>)}
+                        <span style={{fontSize:10,background:"#2a2a00",color:"#ffd43b",padding:"2px 8px",borderRadius:10}}>💴 {item.cost}</span>
+                      </div>
+                      <div style={{fontSize:11,color:"#9999bb",marginTop:6,padding:"4px 0 4px 10px",borderLeft:"2px solid #ffffff20"}}>· {item.tip}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 清單 */}
+        {view==="清單"&&(
+          <div>
+            <div style={{background:"#13131f",border:"1px solid #ffffff12",borderRadius:14,padding:"14px 16px",marginBottom:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <span style={{fontSize:13,fontWeight:700,color:"#f0f0ff"}}>出發前準備清單</span>
+                <span style={{fontSize:13,color:accent,fontWeight:700}}>{doneCount}/{CHECKLIST.length}</span>
+              </div>
+              <div style={{height:6,background:"#ffffff10",borderRadius:10,overflow:"hidden"}}>
+                <div style={{height:"100%",width:`${(doneCount/CHECKLIST.length)*100}%`,background:accent,borderRadius:10,transition:"width 0.4s"}}/>
+              </div>
+              <div style={{fontSize:11,color:"#666",marginTop:6}}>
+                {doneCount===CHECKLIST.length?"🎉 全部完成！出發囉～":`還有 ${CHECKLIST.length-doneCount} 項待完成`}
+              </div>
+            </div>
+            {groups.map(group=>(
+              <div key={group} style={{marginBottom:14}}>
+                <div style={{fontSize:11,color:accent,fontWeight:700,marginBottom:6}}>📌 {group}</div>
+                {CHECKLIST.filter(i=>i.day===group).map(item=>(
+                  <div key={item.id} onClick={()=>setChecked(p=>({...p,[item.id]:!p[item.id]}))}
+                    style={{display:"flex",alignItems:"center",gap:12,background:checked[item.id]?"#0d1a0d":"#13131f",border:`1px solid ${checked[item.id]?"#1a3a1a":"#ffffff10"}`,borderRadius:12,padding:"10px 14px",marginBottom:6,cursor:"pointer",transition:"all 0.2s"}}>
+                    <div style={{width:22,height:22,borderRadius:6,flexShrink:0,background:checked[item.id]?"#22c55e":"#ffffff10",border:`2px solid ${checked[item.id]?"#22c55e":"#ffffff20"}`,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}}>
+                      {checked[item.id]&&<span style={{fontSize:12,color:"#fff"}}>✓</span>}
+                    </div>
+                    <span style={{fontSize:12,color:checked[item.id]?"#555":"#d0d0e8",textDecoration:checked[item.id]?"line-through":"none",lineHeight:1.4}}>
+                      {item.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* LEGEND */}
+      <div style={{position:"fixed",bottom:0,left:"50%",transform:"translateX(-50%)",width:"100%",maxWidth:480,background:"linear-gradient(0deg,#0a0a0f 85%,transparent)",padding:"10px 16px 18px",display:"flex",justifyContent:"center",gap:14}}>
+        {Object.entries(TAG_COLORS).map(([tag,c])=>(
+          <div key={tag} style={{display:"flex",alignItems:"center",gap:4}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:c.dot}}/>
+            <span style={{fontSize:10,color:"#555"}}>{tag}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
